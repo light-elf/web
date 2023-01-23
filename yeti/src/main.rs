@@ -1,6 +1,6 @@
 use colored::*;
 use path_absolutize::Absolutize;
-use std::{fs::copy, fs::write, fs::create_dir_all, path::Path};
+use std::{fs::copy, fs::create_dir_all, fs::write, path::Path};
 use tera::{Context, Tera};
 use walkdir::WalkDir;
 
@@ -13,10 +13,9 @@ fn main() {
     let t = Tera::new(
         format!(
             "{}/{}",
-            templates_path.to_string_lossy(),
+            &templates_path.to_string_lossy(),
             "**/*.html".to_string()
         )
-        .to_string()
         .as_str(),
     )
     .unwrap();
@@ -39,10 +38,7 @@ fn main() {
                     let result = t
                         .render(&file.display().to_string(), &Context::new())
                         .unwrap();
-                    write(
-                        &build_path.join(&file),
-                        result.as_bytes(),
-                    ).unwrap();
+                    write(&build_path.join(&file), result.as_bytes()).unwrap();
                 }
                 _ => {
                     copy_to_dist(path, &templates_path, &build_path);
