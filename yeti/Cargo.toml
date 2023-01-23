@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 colored = "2.0.0"
 walkdir = "2.3.2"
+tera = "1.17.1"
+path-absolutize = "3.0.14"
