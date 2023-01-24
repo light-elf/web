@@ -1,6 +1,5 @@
 use colored::*;
 use path_absolutize::Absolutize;
-use std::borrow::Cow;
 use std::fs::{copy, create_dir_all, write};
 use std::io;
 use std::path::Path;
@@ -19,16 +18,27 @@ fn main() {
         let entry = entry.unwrap();
         let path = entry.path();
         let file = path.strip_prefix(templates_path.as_os_str()).unwrap();
+        let output_file = build_path.join(&file);
         if path.is_file() {
             match path.extension() {
                 Some(ext) if ext == "html" => {
                     if path.file_name().unwrap().to_str().unwrap().starts_with("_") {
                         continue;
                     }
+                    println!(
+                        "compiling {} to {}",
+                        file.display().to_string().yellow(),
+                        OUTPUT_DIR.green()
+                    );
                     render_template(&t, file, &build_path).unwrap();
                 }
                 _ => {
-                    copy_to_dist(file, &build_path).unwrap();
+                    println!(
+                        "copying {} to {}",
+                        file.display().to_string().yellow(),
+                        &output_file.display().to_string().green()
+                    );
+                    copy_to_dist(file, &output_file).unwrap();
                 }
             }
         }
@@ -46,27 +56,19 @@ fn get_template_engine(templates_path: &Path) -> Result<Tera, Error> {
     )
 }
 
-fn render_template(t: &Tera, file: &Path, build_path: &Path) -> io::Result<()> {
-    println!(
-        "compiling {} to {}",
-        file.display().to_string().yellow(),
-        OUTPUT_DIR.green()
-    );
-    let Ok(result) = t
-        .render(&file.display().to_string(), &Context::new()) else {
-            return Err(io::Error::new(io::ErrorKind::Other, "failed to render template"));
-        };
-    write(&build_path.join(&file), result.as_bytes())
+fn render_template(template_engine: &Tera, file: &Path, build_path: &Path) -> io::Result<()> {
+    match template_engine.render(&file.display().to_string(), &Context::new()) {
+        Ok(result) => write(&build_path.join(&file), result.as_bytes()),
+        Err(e) => {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("failed to render template: {}", e),
+            ))
+        }
+    }
 }
 
-fn copy_to_dist(file: &Path, build_path: &Cow<Path>) -> io::Result<()> {
-    let output_file = build_path.join(&file);
-    println!(
-        "copying {} to {}",
-        file.display().to_string().yellow(),
-        &output_file.display().to_string().green()
-    );
-
+fn copy_to_dist(file: &Path, output_file: &Path) -> io::Result<()> {
     let parent = match output_file.parent() {
         Some(parent) => parent,
         None => {
