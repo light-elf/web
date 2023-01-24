@@ -10,3 +10,4 @@ colored = "2.0.0"
 walkdir = "2.3.2"
 tera = "1.17.1"
 path-absolutize = "3.0.14"
+clap = {version="4.1.3" , features=["derive"]}

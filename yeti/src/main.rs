@@ -1,3 +1,4 @@
+use clap::Parser;
 use colored::*;
 use path_absolutize::Absolutize;
 use std::fs::{copy, create_dir_all, write};
@@ -6,12 +7,23 @@ use std::path::Path;
 use tera::{Context, Error, Tera};
 use walkdir::WalkDir;
 
-const OUTPUT_DIR: &str = "../dist";
-const TEMPLATES_DIR: &str = "../templates";
+const OUTPUT_DIR: &str = "./dist";
+const TEMPLATES_DIR: &str = "./templates";
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, default_value_t=TEMPLATES_DIR.to_string())]
+    templates_path: String,
+    #[arg(short, long, default_value_t=OUTPUT_DIR.to_string())]
+    build_path: String,
+}
 
 fn main() {
-    let templates_path = Path::new(&TEMPLATES_DIR).absolutize().unwrap();
-    let build_path = Path::new(&OUTPUT_DIR).absolutize().unwrap();
+    let cli = Args::parse();
+
+    let templates_path = Path::new(&cli.templates_path).absolutize().unwrap();
+    let build_path = Path::new(&cli.build_path).absolutize().unwrap();
     let template_engine = get_template_engine(&templates_path).unwrap();
 
     for entry in WalkDir::new(&templates_path) {
