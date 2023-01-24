@@ -19,6 +19,7 @@ fn main() {
         let path = entry.path();
         let file = path.strip_prefix(templates_path.as_os_str()).unwrap();
         let output_file = build_path.join(&file);
+        let source_file = templates_path.join(&file);
         if path.is_file() {
             match path.extension() {
                 Some(ext) if ext == "html" => {
@@ -36,9 +37,9 @@ fn main() {
                     println!(
                         "copying {} to {}",
                         file.display().to_string().yellow(),
-                        &output_file.display().to_string().green()
+                        OUTPUT_DIR.green()
                     );
-                    copy_to_dist(file, &output_file).unwrap();
+                    copy_to_dist(&source_file, &output_file).unwrap();
                 }
             }
         }
@@ -86,8 +87,8 @@ fn copy_to_dist(file: &Path, output_file: &Path) -> io::Result<()> {
                     io::ErrorKind::Other,
                     format!(
                         "failed to copy file from {} to {} ERROR: {}",
-                        file.display().to_string().red(),
-                        &output_file.display().to_string().red(),
+                        file.display(),
+                        &output_file.display(),
                         e
                     ),
                 ))
