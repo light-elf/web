@@ -12,7 +12,7 @@ const TEMPLATES_DIR: &str = "../templates";
 fn main() {
     let templates_path = Path::new(&TEMPLATES_DIR).absolutize().unwrap();
     let build_path = Path::new(&OUTPUT_DIR).absolutize().unwrap();
-    let t = get_template_engine(&templates_path).unwrap();
+    let template_engine = get_template_engine(&templates_path).unwrap();
 
     for entry in WalkDir::new(&templates_path) {
         let entry = entry.unwrap();
@@ -30,7 +30,7 @@ fn main() {
                         file.display().to_string().yellow(),
                         OUTPUT_DIR.green()
                     );
-                    render_template(&t, file, &build_path).unwrap();
+                    render_template(&template_engine, file, &build_path).unwrap();
                 }
                 _ => {
                     println!(
